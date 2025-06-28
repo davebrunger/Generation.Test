@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -51,24 +52,27 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
             var switchParameters = model.Properties.Select(p => p.Match(s => $"Action {s}Action", t => $"Action<{t.Value}> {t.Key}Action"));
 
             var sourceText = SourceText.From($$"""
+            using System;
+            using System.Collections.Generic;
+            
             namespace {{model.Namespace}};
 
             partial class {{model.ClassName}}
             {
-                private enum Option
+                private enum {{model.FileName}}Option
                 {
                     {{string.Join("\r\n        ", model.Properties.Select(p => p.Match(s => $"{s},", t => $"{t.Key},")))}}
                 }
 
-                private readonly {{model.ClassName}}.Option option;
+                private readonly {{model.ClassName}}.{{model.FileName}}Option option;
 
                 {{string.Join("\r\n    ", model.Properties
                     .Where(p => p.IsTyped)
                     .Select(p => p.Match(_ => string.Empty, t => $$"""private {{t.Value}} {{t.Key}}_Value { get; init; }""")))}}
 
-                {{string.Join("\r\n    ", model.Properties.Select(p => $"public bool Is{p.Match(s => s, t => t.Key)} => option == Option.{p.Match(s => s, t => t.Key)};"))}}
+                {{string.Join("\r\n    ", model.Properties.Select(p => $"public bool Is{p.Match(s => s, t => t.Key)} => option == {model.FileName}Option.{p.Match(s => s, t => t.Key)};"))}}
   
-                private {{model.ClassName}}({{model.ClassName}}.Option option)
+                private {{model.FileName}}({{model.ClassName}}.{{model.FileName}}Option option)
                 {
                     this.option = option;
                     {{string.Join("\r\n        ", model.Properties
@@ -81,8 +85,8 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
                     return option switch
                     {
                         {{string.Join("\r\n            ", model.Properties.Select(p => p.Match(
-                            s => $"{model.ClassName}.Option.{s} => {s}Func(),",
-                            t => $"{model.ClassName}.Option.{t.Key} => {t.Key}Func({t.Key}_Value),")))}}
+                            s => $"{model.ClassName}.{model.FileName}Option.{s} => {s}Func(),",
+                            t => $"{model.ClassName}.{model.FileName}Option.{t.Key} => {t.Key}Func({t.Key}_Value),")))}}
                         _ => throw new IndexOutOfRangeException($"{nameof(option)} is out of range")
                     };
                 }
@@ -92,66 +96,33 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
                     switch (option)
                     {
                         {{string.Join("\r\n            ", model.Properties.Select(p => p.Match(
-                            s => $"case {model.ClassName}.Option.{s}: {s}Action(); return;",
-                            t => $"case {model.ClassName}.Option.{t.Key}: {t.Key}Action({t.Key}_Value); return;")))}}
+                            s => $"case {model.ClassName}.{model.FileName}Option.{s}: {s}Action(); return;",
+                            t => $"case {model.ClassName}.{model.FileName}Option.{t.Key}: {t.Key}Action({t.Key}_Value); return;")))}}
                         default: throw new IndexOutOfRangeException($"{nameof(option)} is out of range");
                     };
                 }
             
                 {{string.Join("\r\n    ", model.Properties.Select(p => p.Match(
-                    s => $$"""public static {{model.ClassName}} {{s}} { get; } = new {{model.ClassName}}({{model.ClassName}}.Option.{{s}});""",
-                    t => $$"""public static {{model.ClassName}} {{t.Key}}({{t.Value}} {{t.Key}}) => new {{model.ClassName}}({{model.ClassName}}.Option.{{t.Key}}) { {{t.Key}}_Value = {{t.Key}} };""")))}}
-                private enum Option
-                {
-                    {{string.Join("\r\n        ", model.Properties.Select(p => p.Match(s => $"{s},", t => $"{t.Key},")))}}
-                }
+                    s => $$"""public static {{model.ClassName}} {{s}} { get; } = new {{model.ClassName}}({{model.ClassName}}.{{model.FileName}}Option.{{s}});""",
+                    t => $$"""public static {{model.ClassName}} {{t.Key}}({{t.Value}} {{t.Key}}) => new {{model.ClassName}}({{model.ClassName}}.{{model.FileName}}Option.{{t.Key}}) { {{t.Key}}_Value = {{t.Key}} };""")))}}
 
-                private readonly {{model.ClassName}}.Option option;
-
-                {{string.Join("\r\n    ", model.Properties
-                    .Where(p => p.IsTyped)
-                    .Select(p => p.Match(_ => string.Empty, t => $$"""private {{t.Value}} {{t.Key}}_Value { get; init; }""")))}}
-
-                {{string.Join("\r\n    ", model.Properties.Select(p => $"public bool Is{p.Match(s => s, t => t.Key)} => option == Option.{p.Match(s => s, t => t.Key)};"))}}
-  
-                private {{model.ClassName}}({{model.ClassName}}.Option option)
-                {
-                    this.option = option;
-                    {{string.Join("\r\n        ", model.Properties
-                        .Where(p => p.IsTyped)
-                        .Select(p => p.Match(_ => "", t => $"{t.Key}_Value = default!;")))}}
-                }
-
-                public TResult Match<TResult>({{string.Join(", ", matchParameters)}})
-                {
-                    return option switch
-                    {
-                        {{string.Join("\r\n            ", model.Properties.Select(p => p.Match(
-                            s => $"{model.ClassName}.Option.{s} => {s}Func(),",
-                            t => $"{model.ClassName}.Option.{t.Key} => {t.Key}Func({t.Key}_Value),")))}}
-                        _ => throw new IndexOutOfRangeException($"{nameof(option)} is out of range")
-                    };
-                }
-
-                public void Switch({{string.Join(", ", switchParameters)}})
-                {
-                    switch (option)
-                    {
-                        {{string.Join("\r\n            ", model.Properties.Select(p => p.Match(
-                            s => $"case {model.ClassName}.Option.{s}: {s}Action(); return;",
-                            t => $"case {model.ClassName}.Option.{t.Key}: {t.Key}Action({t.Key}_Value); return;")))}}
-                        default: throw new IndexOutOfRangeException($"{nameof(option)} is out of range");
-                    };
-                }
-            
-                {{string.Join("\r\n    ", model.Properties.Select(p => p.Match(
-                    s => $$"""public static {{model.ClassName}} {{s}} { get; } = new {{model.ClassName}}({{model.ClassName}}.Option.{{s}});""",
-                    t => $$"""public static {{model.ClassName}} {{t.Key}}({{t.Value}} {{t.Key}}) => new {{model.ClassName}}({{model.ClassName}}.Option.{{t.Key}}) { {{t.Key}}_Value = {{t.Key}} };""")))}}
+                {{string.Join("\r\n    ", model.Properties.Select((p, i) => p.Match(
+                    _ => "",
+                    t => $"public DiscriminatedUnion.Option<{t.Value}> As{t.Key}() => Match<DiscriminatedUnion.Option<{t.Value}>>({GetMatch(model.Properties, i)});")))}}
             }
             """, Encoding.UTF8);
 
             context.AddSource($"{model.Namespace}.{model.FileName}.g.cs", sourceText);
         });
+    }
+
+    private static object GetMatch(List<DiscriminatedUnionOption> properties, int index)
+    {
+        var type = $"DiscriminatedUnion.Option<{properties[index].Match(s => s, t => t.Value)}>";
+
+        return string.Join(", ", properties.Select((p, i) => i == index 
+            ? $"({p.Match(s => s, t => t.Key)}) => {type}.Some({p.Match(s => s, t => t.Key)})"
+            : $"({p.Match(_ => "", _ => "_")}) => {type}.None"));
     }
 
     private static DiscriminatedUnionOption GetOption(AttributeData a)
