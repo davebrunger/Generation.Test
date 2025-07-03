@@ -10,6 +10,13 @@
 		<VersionPrefix>1.0.2</VersionPrefix>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
+		<Title>WS Domain Modelling</Title>
+		<Authors>David Brunger</Authors>
+		<Copyright>© 2025 David Brunger</Copyright>
+		<PackageProjectUrl>https://github.com/davebrunger/Generation.Test</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/davebrunger/Generation.Test.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>Code Generation;Domain Modelling</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
