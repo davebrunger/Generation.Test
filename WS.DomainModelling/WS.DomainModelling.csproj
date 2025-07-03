@@ -7,7 +7,7 @@
 		<AssemblyName>WS.DomainModelling</AssemblyName>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-		<VersionPrefix>1.0.2</VersionPrefix>
+		<VersionPrefix>1.0.3</VersionPrefix>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<Title>WS Domain Modelling</Title>
@@ -17,6 +17,7 @@
 		<RepositoryUrl>https://github.com/davebrunger/Generation.Test.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>Code Generation;Domain Modelling</PackageTags>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -25,7 +26,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="Readme.md" Pack="true" PackagePath="\" />
+		<None Include="Readme.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 
 </Project>
