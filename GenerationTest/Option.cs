@@ -22,6 +22,8 @@ public static class Option
                 }
 
                 public static NoneOption None { get; } = new NoneOption();
+
+                public static Option<T> Some<T>(T t) => Option<T>.Some(t);
             }
             
             public class Option<T>
@@ -74,6 +76,11 @@ public static class Option
 
                 public static Option<T> Some(T some) => new(OptionOption.Some) { Value = some };
                 public static Option<T> None { get; } = new(OptionOption.None);
+
+                public override string ToString()
+                {
+                    return Match(s => $"Some( {s} )", () => "None");
+                }
             }
             """, Encoding.UTF8));
     }

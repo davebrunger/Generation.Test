@@ -28,6 +28,7 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
                 var _class = context.TargetSymbol;
 
                 var properties = _class.GetAttributes()
+                    .Where(a => a.AttributeClass!.Name == "OptionAttribute") // Make this better by checking the namespace too
                     .Select(GetOption)
                     .ToList();
 
