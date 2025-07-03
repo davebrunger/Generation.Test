@@ -2,17 +2,17 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace GenerationTest;
+namespace WS.DomainModelling.BasicWrapper;
 
 public static class BasicWrapperAttribute
 {
     public static void AddBasicWrapperAttribute(this IncrementalGeneratorPostInitializationContext context)
     {
-        context.AddSource("DiscriminatedUnion.BasicWrapperAttribute.g.cs", SourceText.From("""
+        context.AddSource("WS.DomainModelling.BasicWrapper.BasicWrapperAttribute.g.cs", SourceText.From("""
             using System;
             using Microsoft.CodeAnalysis;
                 
-            namespace DiscriminatedUnion
+            namespace WS.DomainModelling.BasicWrapper
             {
                 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false), Embedded]
                 public sealed class BasicWrapperAttribute : Attribute

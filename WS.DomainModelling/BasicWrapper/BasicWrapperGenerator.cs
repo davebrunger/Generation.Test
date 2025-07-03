@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace GenerationTest;
+namespace WS.DomainModelling.BasicWrapper;
 
 [Generator]
 public class BasicWrapperGenerator : IIncrementalGenerator
@@ -14,13 +14,11 @@ public class BasicWrapperGenerator : IIncrementalGenerator
     {
         context.RegisterPostInitializationOutput(static postInitializationContext =>
         {
-            //postInitializationContext.AddEmbeddedAttributeDefinition();
             postInitializationContext.AddBasicWrapperAttribute();
-            //postInitializationContext.AddOption();
         });
 
         var pipeline = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "DiscriminatedUnion.BasicWrapperAttribute",
+            "WS.DomainModelling.BasicWrapper.BasicWrapperAttribute",
             static (node, _) => node is ClassDeclarationSyntax,
             static (context, _) =>
             {
@@ -95,11 +93,16 @@ public class BasicWrapperGenerator : IIncrementalGenerator
                     Value = value;
                 }
 
-                public static DiscriminatedUnion.Option<{{model.ClassName}}> Create({{model.WrappedType.Name}} source)
+                public static WS.DomainModelling.Common.Option<{{model.ClassName}}> Create({{model.WrappedType.Name}} source)
                 {
                     return {{model.ValidateMemberName}}(source)
-                        ? DiscriminatedUnion.Option.Some(new {{model.ClassName}}(source))
-                        : DiscriminatedUnion.Option.None;
+                        ? WS.DomainModelling.Common.Option.Some(new {{model.ClassName}}(source))
+                        : WS.DomainModelling.Common.Option.None;
+                }
+
+                public override string ToString()
+                {
+                    return Value.ToString();
                 }
             }
             """, Encoding.UTF8);

@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace GenerationTest;
+namespace WS.DomainModelling.DiscriminatedUnion;
 
 [Generator]
 public class DiscriminatedUnionGenerator : IIncrementalGenerator
@@ -15,13 +15,11 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
     {
         context.RegisterPostInitializationOutput(static postInitializationContext =>
         {
-            postInitializationContext.AddEmbeddedAttributeDefinition();
             postInitializationContext.AddOptionAttribute();
-            postInitializationContext.AddOption();
         });
 
         var pipeline = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "DiscriminatedUnion.OptionAttribute",
+            "WS.DomainModelling.DiscriminatedUnion.OptionAttribute",
             static (node, _) => node is ClassDeclarationSyntax,
             static (context, _) =>
             {
@@ -109,7 +107,7 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
 
                 {{string.Join("\r\n    ", model.Properties.Select((p, i) => p.Match(
                     _ => "",
-                    t => $"public DiscriminatedUnion.Option<{t.Value}> As{t.Key}() => Match<DiscriminatedUnion.Option<{t.Value}>>({GetMatch(model.Properties, i)});")))}}
+                    t => $"public WS.DomainModelling.Common.Option<{t.Value}> As{t.Key}() => Match<WS.DomainModelling.Common.Option<{t.Value}>>({GetMatch(model.Properties, i)});")))}}
             }
             """, Encoding.UTF8);
 
@@ -119,7 +117,7 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
 
     private static object GetMatch(List<DiscriminatedUnionOption> properties, int index)
     {
-        var type = $"DiscriminatedUnion.Option<{properties[index].Match(s => s, t => t.Value)}>";
+        var type = $"WS.DomainModelling.Common.Option<{properties[index].Match(s => s, t => t.Value)}>";
 
         return string.Join(", ", properties.Select((p, i) => i == index 
             ? $"({p.Match(s => s, t => t.Key)}) => {type}.Some({p.Match(s => s, t => t.Key)})"

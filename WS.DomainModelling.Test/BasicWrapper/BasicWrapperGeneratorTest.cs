@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
-using GenerationTest;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using WS.DomainModelling.BasicWrapper;
 
-namespace Generation.Test.Test;
+namespace WS.DomainModelling.Test.BasicWrapper;
 
 public class BasicWrapperGeneratorTest
 {
@@ -15,7 +14,7 @@ public class BasicWrapperGeneratorTest
 
             namespace Tester
 
-            [DiscriminatedUnion.BasicWrapper(typeof(string), "Validate")]
+            [WS.DomainModelling.BasicWrapper.BasicWrapper(typeof(string), "Validate")]
             public partial class TestType
             {
                 private static bool Validate(string source)

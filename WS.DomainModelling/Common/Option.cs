@@ -2,17 +2,17 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace GenerationTest;
+namespace WS.DomainModelling.Common;
 
 public static class Option
 {
     public static void AddOption(this IncrementalGeneratorPostInitializationContext context)
     {
-        context.AddSource("DiscriminatedUnion.Option.g.cs", SourceText.From("""
+        context.AddSource("WS.DomainModelling.Common.Option.g.cs", SourceText.From("""
             using System;
             using System.Collections.Generic;
 
-            namespace DiscriminatedUnion;
+            namespace WS.DomainModelling.Common;
 
             public static class Option
             {
@@ -79,7 +79,7 @@ public static class Option
 
                 public override string ToString()
                 {
-                    return Match(s => $"Some( {s} )", () => "None");
+                    return Match(s => $"Some ({s})", () => "None");
                 }
             }
             """, Encoding.UTF8));

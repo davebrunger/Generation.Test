@@ -1,4 +1,5 @@
-﻿using DiscriminatedUnion;
+﻿using WS.DomainModelling.Common;
+using WS.DomainModelling.DiscriminatedUnion;
 
 namespace GenerationTest.Cmd;
 

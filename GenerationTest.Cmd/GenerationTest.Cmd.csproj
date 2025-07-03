@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="../GenerationTest/GenerationTest.csproj"
+		<ProjectReference Include="../WS.DomainModelling/WS.DomainModelling.csproj"
 						  OutputItemType="Analyzer"
 						  ReferenceOutputAssembly="false" />
 	</ItemGroup>

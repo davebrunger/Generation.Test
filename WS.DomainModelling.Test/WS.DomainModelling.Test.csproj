@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GenerationTest\GenerationTest.csproj" />
+    <ProjectReference Include="..\WS.DomainModelling\WS.DomainModelling.csproj" />
   </ItemGroup>
 
   <ItemGroup>

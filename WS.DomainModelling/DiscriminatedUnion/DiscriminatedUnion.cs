@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GenerationTest;
+namespace WS.DomainModelling.DiscriminatedUnion;
 
 public class DiscriminatedUnion
 {

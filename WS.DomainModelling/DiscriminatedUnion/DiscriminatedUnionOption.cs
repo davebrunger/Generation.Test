@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GenerationTest;
+namespace WS.DomainModelling.DiscriminatedUnion;
 
 public class DiscriminatedUnionOption
 {

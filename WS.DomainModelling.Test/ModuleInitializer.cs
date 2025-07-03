@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Generation.Test.Test;
+namespace WS.DomainModelling.Test;
 
 public class ModuleInitializer
 {
