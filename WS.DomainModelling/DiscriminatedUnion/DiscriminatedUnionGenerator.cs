@@ -108,6 +108,15 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
                 {{string.Join("\r\n    ", model.Properties.Select((p, i) => p.Match(
                     _ => "",
                     t => $"public WS.DomainModelling.Common.Option<{t.Value}> As{t.Key}() => Match<WS.DomainModelling.Common.Option<{t.Value}>>({GetMatch(model.Properties, i)});")))}}
+
+                public override string ToString()
+                {
+                    return Match(
+                        {{string.Join(",\r\n            ", model.Properties.Select(p => p.Match(
+                            s => $$"""() => "{{s}}" """,
+                            t => $$"""({{t.Key}}) => $"{{t.Key}} ({{{t.Key}}})" """)))}}
+                    );
+                }
             }
             """, Encoding.UTF8);
 

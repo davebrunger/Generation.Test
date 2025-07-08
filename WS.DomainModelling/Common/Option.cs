@@ -10,7 +10,6 @@ public static class Option
     {
         context.AddSource("WS.DomainModelling.Common.Option.g.cs", SourceText.From("""
             using System;
-            using System.Collections.Generic;
 
             namespace WS.DomainModelling.Common;
 
