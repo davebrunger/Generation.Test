@@ -10,6 +10,15 @@ namespace WS.DomainModelling.BasicWrapper;
 [Generator]
 public class BasicWrapperGenerator : IIncrementalGenerator
 {
+    private enum BasicWrapperError
+    {
+        MissingValidateMethod = 1,
+        ValidateMethodNotPrivate,
+        ValidateMethodNotStatic,
+        ValidateMethodReturnTypeNotBoolean,
+        ValidateMethodParameterTypeMismatch
+    }
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(static postInitializationContext =>
@@ -29,38 +38,47 @@ public class BasicWrapperGenerator : IIncrementalGenerator
                 var validateMethod = _class.GetMembers(validateMemberName)
                     .OfType<IMethodSymbol>()
                     .SingleOrDefault();
+                var location = attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()!;
 
-#pragma warning disable IDE0270 // Use coalesce expression
+                var errors = new System.Collections.Generic.List<(BasicWrapperError Error, string Message, Location Location)>();
                 if (validateMethod == null)
                 {
-                    throw new InvalidOperationException(
-                        $"Class '{_class.Name}' must have a method named '{validateMemberName}' to validate the wrapper source.");
+                    errors.Add((
+                        BasicWrapperError.MissingValidateMethod,
+                        $"Class '{_class.Name}' must have a method named '{validateMemberName}' to validate the wrapper source.",
+                        location));
                 }
-#pragma warning restore IDE0270 // Use coalesce expression
-
-                if (validateMethod.DeclaredAccessibility != Accessibility.Private)
+                else
                 {
-                    throw new InvalidOperationException(
-                        $"Method '{validateMemberName}' in class '{_class.Name}' must be private");
-                }
-
-                if (!validateMethod.IsStatic)
-                {
-                    throw new InvalidOperationException(
-                        $"Method '{validateMemberName}' in class '{_class.Name}' must be static");
-                }
-
-                if (validateMethod.ReturnType.SpecialType != SpecialType.System_Boolean)
-                {
-                    throw new InvalidOperationException(
-                        $"Method '{validateMemberName}' in class '{_class.Name}' must return a boolean");
-                }
-
-                if (validateMethod.Parameters.Length != 1 
-                    || !SymbolEqualityComparer.Default.Equals(validateMethod.Parameters[0].Type, wrappedType))
-                {
-                    throw new InvalidOperationException(
-                        $"Method '{validateMemberName}' in class '{_class.Name}' must have a single {wrappedType!.Name} parameter");
+                    if (validateMethod.DeclaredAccessibility != Accessibility.Private)
+                    {
+                        errors.Add((
+                            BasicWrapperError.ValidateMethodNotPrivate,
+                            $"Method '{validateMemberName}' in class '{_class.Name}' must be private",
+                            location));
+                    }
+                    if (!validateMethod.IsStatic)
+                    {
+                        errors.Add((
+                            BasicWrapperError.ValidateMethodNotStatic,
+                            $"Method '{validateMemberName}' in class '{_class.Name}' must be static",
+                            location));
+                    }
+                    if (validateMethod.ReturnType.SpecialType != SpecialType.System_Boolean)
+                    {
+                        errors.Add((
+                            BasicWrapperError.ValidateMethodReturnTypeNotBoolean,
+                            $"Method '{validateMemberName}' in class '{_class.Name}' must return a boolean",
+                            location));
+                    }
+                    if (validateMethod.Parameters.Length != 1
+                        || !SymbolEqualityComparer.Default.Equals(validateMethod.Parameters[0].Type, wrappedType))
+                    {
+                        errors.Add((
+                            BasicWrapperError.ValidateMethodParameterTypeMismatch,
+                            $"Method '{validateMemberName}' in class '{_class.Name}' must have a single {wrappedType!.Name} parameter",
+                            location));
+                    }
                 }
 
                 return new
@@ -74,19 +92,37 @@ public class BasicWrapperGenerator : IIncrementalGenerator
                         .Last(),
                     FileName = _class.Name,
                     WrappedType = wrappedType,
-                    ValidateMemberName = validateMemberName
-
+                    ValidateMemberName = validateMemberName,
+                    Errors = errors
                 };
             });
 
         context.RegisterSourceOutput(pipeline, static (context, model) =>
         {
+            if (model.Errors.Count > 0)
+            {
+                foreach (var (optionError, message, location) in model.Errors)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        $"WSBW{(int)optionError:000}",
+                        optionError.ToString(),
+                        message,
+                        DiagnosticSeverity.Error,
+                        DiagnosticSeverity.Error,
+                        true,
+                        0,
+                        location: location));
+                }
+
+                return;
+            }
+
             var source = SourceText.From($$"""
             namespace {{model.Namespace}};
 
             sealed partial class {{model.ClassName}}
             {
-                public {{model.WrappedType.Name}} Value { get; }
+                public {{model.WrappedType!.Name}} Value { get; }
 
                 private {{model.FileName}}({{model.WrappedType.Name}} value)
                 {
