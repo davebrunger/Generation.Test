@@ -38,7 +38,7 @@ public class Result<T, TError>
         };
     }
 
-    public void Switch<TResult>(Action<T> successAction, Action<ImmutableList<TError>> failureAction)
+    public void Switch(Action<T> successAction, Action<ImmutableList<TError>> failureAction)
     {
         switch (option)
         {
@@ -54,8 +54,8 @@ public class Result<T, TError>
     }
 
     public static Result<T, TError> Success(T successValue) => new(ResultOption.Success) { successValue = successValue };
-    public static Result<T, TError> Failure(IEnumerable<TError> failureValue) => new(ResultOption.Failure) { failureValue = failureValue.ToImmutableList() };
-    public static Result<T, TError> Failure(params TError[] failureValue) => new(ResultOption.Failure) { failureValue = failureValue.ToImmutableList() };
+    public static Result<T, TError> Failure(IEnumerable<TError> failureValue) => new(ResultOption.Failure) { failureValue = [.. failureValue] };
+    public static Result<T, TError> Failure(params TError[] failureValue) => new(ResultOption.Failure) { failureValue = [.. failureValue] };
 
     public override string ToString()
     {

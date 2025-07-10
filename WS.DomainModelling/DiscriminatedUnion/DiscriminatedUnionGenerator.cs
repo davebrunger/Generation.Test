@@ -1,16 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+
+using GetOptionResult = WS.DomainModelling.Internal.Result<
+    WS.DomainModelling.DiscriminatedUnion.DiscriminatedUnionOption,
+    (
+        WS.DomainModelling.DiscriminatedUnion.DiscriminatedUnionGenerator.GetOptionError Error, 
+        string Message, 
+        Microsoft.CodeAnalysis.Location Location
+    )>;
 
 namespace WS.DomainModelling.DiscriminatedUnion;
 
 [Generator]
 public class DiscriminatedUnionGenerator : IIncrementalGenerator
 {
+    private static readonly Regex OptionNamePattern = new("^[_a-zA-Z][_a-zA-Z0-9]*$");
+    
+    public enum GetOptionError
+    {
+        InvalidName = 1,
+        BothTypeAndGenericSet,
+        InvalidGenericType
+    }
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(static postInitializationContext =>
@@ -23,11 +42,13 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
             static (node, _) => node is ClassDeclarationSyntax,
             static (context, _) =>
             {
-                var _class = context.TargetSymbol;
+                var _class = context.TargetSymbol as INamedTypeSymbol;
+
+                var genericParameters = _class!.TypeParameters.Select(p => p.Name).ToImmutableHashSet();
 
                 var properties = _class.GetAttributes()
                     .Where(a => a.AttributeClass!.Name == "OptionAttribute") // Make this better by checking the namespace too
-                    .Select(GetOption)
+                    .Select(a => GetOption(a, genericParameters))
                     .ToList();
 
                 return new
@@ -47,8 +68,35 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(pipeline, static (context, model) =>
         {
-            var matchParameters = model.Properties.Select(p => p.Match(s => $"Func<TResult> {s}Func", t => $"Func<{t.Value}, TResult> {t.Key}Func"));
-            var switchParameters = model.Properties.Select(p => p.Match(s => $"Action {s}Action", t => $"Action<{t.Value}> {t.Key}Action"));
+            var (properties, errors) = model.Properties.Aggregate(
+                (Properties: new List<DiscriminatedUnionOption>(), Errors: new List<(GetOptionError Error, string Message, Location Location)>()),
+                (a, r) => {
+                    r.Switch(
+                        property => a.Properties.Add(property),
+                        errors => a.Errors.AddRange(errors));
+                    return a;
+                });
+
+            if (errors.Count > 0)
+            {
+                foreach (var (optionError, message, location) in errors)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        $"WSDM{(int)optionError:000}",
+                        optionError.ToString(),
+                        message,
+                        DiagnosticSeverity.Error,
+                        DiagnosticSeverity.Error,
+                        true,
+                        0,
+                        location: location));
+                }
+
+                return;
+            }
+
+            var matchParameters = properties.Select(p => p.Match(s => $"Func<TResult> {s}Func", t => $"Func<{t.Value}, TResult> {t.Key}Func"));
+            var switchParameters = properties.Select(p => p.Match(s => $"Action {s}Action", t => $"Action<{t.Value}> {t.Key}Action"));
 
             var sourceText = SourceText.From($$"""
             using System;
@@ -60,21 +108,21 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
             {
                 private enum {{model.FileName}}Option
                 {
-                    {{string.Join("\r\n        ", model.Properties.Select(p => p.Match(s => $"{s},", t => $"{t.Key},")))}}
+                    {{string.Join("\r\n        ", properties.Select(p => p.Match(s => $"{s},", t => $"{t.Key},")))}}
                 }
 
                 private readonly {{model.ClassName}}.{{model.FileName}}Option option;
 
-                {{string.Join("\r\n    ", model.Properties
+                {{string.Join("\r\n    ", properties
                     .Where(p => p.IsTyped)
                     .Select(p => p.Match(_ => string.Empty, t => $$"""private {{t.Value}} {{t.Key}}_Value { get; init; }""")))}}
 
-                {{string.Join("\r\n    ", model.Properties.Select(p => $"public bool Is{p.Match(s => s, t => t.Key)} => option == {model.FileName}Option.{p.Match(s => s, t => t.Key)};"))}}
+                {{string.Join("\r\n    ", properties.Select(p => $"public bool Is{p.Match(s => s, t => t.Key)} => option == {model.FileName}Option.{p.Match(s => s, t => t.Key)};"))}}
   
                 private {{model.FileName}}({{model.ClassName}}.{{model.FileName}}Option option)
                 {
                     this.option = option;
-                    {{string.Join("\r\n        ", model.Properties
+                    {{string.Join("\r\n        ", properties
                         .Where(p => p.IsTyped)
                         .Select(p => p.Match(_ => "", t => $"{t.Key}_Value = default!;")))}}
                 }
@@ -83,7 +131,7 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
                 {
                     return option switch
                     {
-                        {{string.Join("\r\n            ", model.Properties.Select(p => p.Match(
+                        {{string.Join("\r\n            ", properties.Select(p => p.Match(
                             s => $"{model.ClassName}.{model.FileName}Option.{s} => {s}Func(),",
                             t => $"{model.ClassName}.{model.FileName}Option.{t.Key} => {t.Key}Func({t.Key}_Value),")))}}
                         _ => throw new IndexOutOfRangeException($"{nameof(option)} is out of range")
@@ -94,25 +142,25 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
                 {
                     switch (option)
                     {
-                        {{string.Join("\r\n            ", model.Properties.Select(p => p.Match(
+                        {{string.Join("\r\n            ", properties.Select(p => p.Match(
                             s => $"case {model.ClassName}.{model.FileName}Option.{s}: {s}Action(); return;",
                             t => $"case {model.ClassName}.{model.FileName}Option.{t.Key}: {t.Key}Action({t.Key}_Value); return;")))}}
                         default: throw new IndexOutOfRangeException($"{nameof(option)} is out of range");
                     };
                 }
             
-                {{string.Join("\r\n    ", model.Properties.Select(p => p.Match(
+                {{string.Join("\r\n    ", properties.Select(p => p.Match(
                     s => $$"""public static {{model.ClassName}} {{s}} { get; } = new {{model.ClassName}}({{model.ClassName}}.{{model.FileName}}Option.{{s}});""",
                     t => $$"""public static {{model.ClassName}} {{t.Key}}({{t.Value}} {{t.Key}}) => new {{model.ClassName}}({{model.ClassName}}.{{model.FileName}}Option.{{t.Key}}) { {{t.Key}}_Value = {{t.Key}} };""")))}}
 
-                {{string.Join("\r\n    ", model.Properties.Select((p, i) => p.Match(
+                {{string.Join("\r\n    ", properties.Select((p, i) => p.Match(
                     _ => "",
-                    t => $"public WS.DomainModelling.Common.Option<{t.Value}> As{t.Key}() => Match<WS.DomainModelling.Common.Option<{t.Value}>>({GetMatch(model.Properties, i)});")))}}
+                    t => $"public WS.DomainModelling.Common.Option<{t.Value}> As{t.Key}() => Match<WS.DomainModelling.Common.Option<{t.Value}>>({GetMatch(properties, i)});")))}}
 
                 public override string ToString()
                 {
                     return Match(
-                        {{string.Join(",\r\n            ", model.Properties.Select(p => p.Match(
+                        {{string.Join(",\r\n            ", properties.Select(p => p.Match(
                             s => $$"""() => "{{s}}" """,
                             t => $$"""({{t.Key}}) => $"{{t.Key}} ({{{t.Key}}})" """)))}}
                     );
@@ -133,31 +181,52 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
             : $"({p.Match(_ => "", _ => "_")}) => {type}.None"));
     }
 
-    private static DiscriminatedUnionOption GetOption(AttributeData a)
+    private static GetOptionResult GetOption(AttributeData attributeData, IReadOnlyCollection<string> genericParameters)
     {
-        var type = a.NamedArguments.SingleOrDefault(na => na.Key == "OfType").Value.Value as INamedTypeSymbol;
-        var genericType = a.NamedArguments.SingleOrDefault(na => na.Key == "OfGeneric").Value.Value as string;
+        var name = attributeData.ConstructorArguments.Single().Value!.ToString();
+        var type = attributeData.NamedArguments.SingleOrDefault(na => na.Key == "OfType").Value.Value as INamedTypeSymbol;
+        var genericType = attributeData.NamedArguments.SingleOrDefault(na => na.Key == "OfGeneric").Value.Value as string;
+        var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation()!;
+
+        var errors = new List<(GetOptionError, string, Location)>();
 
         if (type != null && genericType != null)
         {
-            throw new InvalidOperationException($"The attribute {a.AttributeClass?.ToDisplayString()} cannot have both 'OfType' and 'OfGeneric' properties set at the same time.");
+            errors.Add((GetOptionError.BothTypeAndGenericSet, 
+                $"The attribute {attributeData.AttributeClass?.ToDisplayString()} ({name}) cannot have both 'OfType' and 'OfGeneric' properties set at the same time.",
+                location));
+        }
+
+        if (!OptionNamePattern.IsMatch(name))
+        {
+            errors.Add((GetOptionError.InvalidName,
+                $"The name {name} does not meet the option name restrictions",
+                location));
+        }
+
+        if (genericType != null && !genericParameters.Contains(genericType))
+        {
+            errors.Add((GetOptionError.InvalidGenericType,
+                $"The generic type {genericType} must be one of {string.Join(", ", genericParameters)}",
+                location));
+        }
+
+        if (errors.Count > 0)
+        {
+            return GetOptionResult.Failure(errors);
         }
 
         if (type != null)
         {
-            return DiscriminatedUnionOption.Typed(
-                a.ConstructorArguments.First()!.Value!.ToString(),
-                GetFullType(type));
+            return GetOptionResult.Success(DiscriminatedUnionOption.Typed(name, GetFullType(type)));
         }
 
         if (genericType != null)
         {
-            return DiscriminatedUnionOption.Typed(
-                a.ConstructorArguments.First()!.Value!.ToString(),
-                genericType);
+            return GetOptionResult.Success(DiscriminatedUnionOption.Typed(name, genericType));
         }
 
-        return DiscriminatedUnionOption.Simple(a.ConstructorArguments.First()!.Value!.ToString());
+        return GetOptionResult.Success(DiscriminatedUnionOption.Simple(attributeData.ConstructorArguments.First()!.Value!.ToString()));
     }
 
     private static string GetFullType(INamedTypeSymbol type)

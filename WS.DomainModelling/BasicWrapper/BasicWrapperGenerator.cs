@@ -102,7 +102,7 @@ public class BasicWrapperGenerator : IIncrementalGenerator
 
                 public override string ToString()
                 {
-                    return $"{{model.FileName}} ({Value.ToString()})";
+                    return $"{{model.FileName}} ({Value})";
                 }
             }
             """, Encoding.UTF8);
