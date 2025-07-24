@@ -7,7 +7,7 @@
 		<AssemblyName>WS.DomainModelling</AssemblyName>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-		<VersionPrefix>1.0.4</VersionPrefix>
+		<VersionPrefix>1.0.5</VersionPrefix>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<Title>WS Domain Modelling</Title>
