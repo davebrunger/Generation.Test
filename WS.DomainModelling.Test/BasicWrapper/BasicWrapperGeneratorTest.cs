@@ -7,7 +7,7 @@ namespace WS.DomainModelling.Test.BasicWrapper;
 public class BasicWrapperGeneratorTest
 {
     [Fact]
-    public void Test1()
+    public void TestSuccesCase()
     {
         var source = """
             using System;

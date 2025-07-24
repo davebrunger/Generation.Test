@@ -17,3 +17,17 @@ var badString = String50.Create("Hels;,lg';fag';fg'fg';kdsh-0thigdflkhbn,/.gfdm,
 
 Console.WriteLine(checkedString);
 Console.WriteLine(badString);
+
+var hello1 = checkedString.Match(s => s, () => throw new Exception("This shouldn't happen"));
+var hello2 = String50.Create("Hello").Match(s => s, () => throw new Exception("This shouldn't happen"));
+var goodbye = String50.Create("Goodbye").Match(s => s, () => throw new Exception("This shouldn't happen"));
+
+Console.WriteLine(hello1 == hello2);
+Console.WriteLine(hello1 != hello2);
+Console.WriteLine(hello1 == "Hello");
+Console.WriteLine(hello1 != "Hello");
+Console.WriteLine(hello1 == goodbye);
+Console.WriteLine(hello1 != goodbye);
+Console.WriteLine(hello1 == "Goodbye");
+Console.WriteLine(hello1 != "Goodbye");
+

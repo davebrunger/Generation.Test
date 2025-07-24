@@ -120,7 +120,7 @@ public class BasicWrapperGenerator : IIncrementalGenerator
             var source = SourceText.From($$"""
             namespace {{model.Namespace}};
 
-            sealed partial class {{model.ClassName}}
+            sealed partial class {{model.ClassName}} : IEquatable<{{model.ClassName}}>
             {
                 public {{model.WrappedType!.Name}} Value { get; }
 
@@ -139,6 +139,38 @@ public class BasicWrapperGenerator : IIncrementalGenerator
                 public override string ToString()
                 {
                     return $"{{model.FileName}} ({Value})";
+                }
+
+                public bool Equals({{model.ClassName}}? other)
+                {
+                    if (other is null) return false;
+                    return Value.Equals(other.Value);
+                }
+
+                public override bool Equals(object? obj)
+                {
+                    return obj is {{model.ClassName}} other && Equals(other);
+                }
+
+                public override int GetHashCode()
+                {
+                    return Value.GetHashCode();
+                }
+
+                public static bool operator== ({{model.ClassName}} obj1, {{model.ClassName}} obj2)
+                {
+                    if (ReferenceEquals(obj1, obj2)) return true;
+                    if (obj1 is null || obj2 is null) return false;
+                    return obj1.Equals(obj2);
+                }
+
+                public static bool operator!= ({{model.ClassName}} obj1, {{model.ClassName}} obj2)
+                {
+                    return !(obj1 == obj2);
+                }
+
+                public static implicit operator {{model.WrappedType!.Name}}({{model.ClassName}} input) {
+                    return input.Value;
                 }
             }
             """, Encoding.UTF8);
