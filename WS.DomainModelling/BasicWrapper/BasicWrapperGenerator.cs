@@ -157,18 +157,6 @@ public class BasicWrapperGenerator : IIncrementalGenerator
                     return Value.GetHashCode();
                 }
 
-                public static bool operator== ({{model.ClassName}} obj1, {{model.ClassName}} obj2)
-                {
-                    if (ReferenceEquals(obj1, obj2)) return true;
-                    if (obj1 is null || obj2 is null) return false;
-                    return obj1.Equals(obj2);
-                }
-
-                public static bool operator!= ({{model.ClassName}} obj1, {{model.ClassName}} obj2)
-                {
-                    return !(obj1 == obj2);
-                }
-
                 public static implicit operator {{model.WrappedType!.Name}}({{model.ClassName}} input) {
                     return input.Value;
                 }

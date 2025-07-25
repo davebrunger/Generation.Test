@@ -1,2 +1,5 @@
-# Generation.Test
+# WS.DomainModelling
 Test out dotnet code generation to create a genearator for F# style discriminated unions in C#
+
+## Inspiration
+- [*Domain Modeling Made Functional*](https://pragprog.com/titles/swdddf/domain-modeling-made-functional/) - [Scott Wlaschin](https://scottwlaschin.com/)
