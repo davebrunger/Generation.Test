@@ -3,11 +3,12 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AssemblyName></AssemblyName>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-		<VersionPrefix>1.0.5</VersionPrefix>
+		<VersionPrefix>1.0.6</VersionPrefix>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<Title>WS Domain Modelling</Title>
@@ -17,34 +18,46 @@
 		<RepositoryUrl>https://github.com/davebrunger/Generation.Test.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>Code Generation;Domain Modelling</PackageTags>
-		<IncludeBuildOutput>true</IncludeBuildOutput>
-		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
-		<PackageReference Include="System.Collections.Immutable" Version="9.0.7" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Basic.Reference.Assemblies" Version="1.8.3" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="System.Collections.Immutable" Version="9.0.7" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="WS.DomainModelling.Common" Version="1.0.6" GeneratePathProperty="true" PrivateAssets="all" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <NoWarn>1701;1702;NU5128</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <NoWarn>1701;1702;NU5128</NoWarn>
+	</PropertyGroup>
+
+	<Target Name="GetDependencyTargetPaths">
+		<ItemGroup>
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGBasic_Reference_Assemblies)\lib\netstandard2.0\Basic.Reference.Assemblies.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGSystem_Collections_Immutable)\lib\netstandard2.0\System.Collections.Immutable.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGWS_DomainModelling_Common)\lib\netstandard2.0\WS.DomainModelling.Common.dll" IncludeRuntimeDependency="false" />
+			<!-- Pack both our DLL and the dependencies into a generated Nuget Package -->
+			<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+			<None Include="$(PKGBasic_Reference_Assemblies)\lib\netstandard2.0\Basic.Reference.Assemblies.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+			<None Include="$(PKGSystem_Collections_Immutable)\lib\netstandard2.0\System.Collections.Immutable.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+			<None Include="$(PKGWS_DomainModelling_Common)\lib\netstandard2.0\WS.DomainModelling.Common.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		</ItemGroup>
+	</Target>
+	
 	<ItemGroup>
 		<None Include="../Readme.md" Pack="true" PackagePath="/" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\WS.DomainModelling.Common\WS.DomainModelling.Common.csproj">
-			<ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-			<IncludeAssets>WS.DomainModelling.Common.dll</IncludeAssets>
-		</ProjectReference>
-	</ItemGroup>
-
-	<Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
-		<ItemGroup>
-			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
-		</ItemGroup>
-	</Target>
 </Project>

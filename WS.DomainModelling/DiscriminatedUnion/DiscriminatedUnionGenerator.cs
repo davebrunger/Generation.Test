@@ -1,22 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
+﻿namespace WS.DomainModelling.DiscriminatedUnion;
 
-using GetOptionResult = WS.DomainModelling.Internal.Result<
-    WS.DomainModelling.DiscriminatedUnion.DiscriminatedUnionOption,
-    (
-        WS.DomainModelling.DiscriminatedUnion.DiscriminatedUnionGenerator.GetOptionError Error, 
-        string Message, 
-        Microsoft.CodeAnalysis.Location Location
-    )>;
-
-namespace WS.DomainModelling.DiscriminatedUnion;
+using GetOptionResult = Common.Result<
+    DiscriminatedUnionOption,
+    IReadOnlyList<(
+        DiscriminatedUnionGenerator.GetOptionError Error,
+        string Message,
+        Location Location
+    )>>;
 
 [Generator]
 public class DiscriminatedUnionGenerator : IIncrementalGenerator
@@ -213,7 +203,7 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
 
         if (errors.Count > 0)
         {
-            return GetOptionResult.Failure(errors);
+            return GetOptionResult.Error(errors);
         }
 
         if (type != null)

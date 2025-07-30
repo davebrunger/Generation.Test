@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WS.DomainModelling.DiscriminatedUnion;
+﻿namespace WS.DomainModelling.DiscriminatedUnion;
 
 public class DiscriminatedUnion
 {

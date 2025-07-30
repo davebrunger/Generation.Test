@@ -1,6 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-
-namespace WS.DomainModelling.Common;
+﻿namespace WS.DomainModelling.Common;
 
 [Generator]
 public class CommonGenerator : IIncrementalGenerator
@@ -10,7 +8,6 @@ public class CommonGenerator : IIncrementalGenerator
         context.RegisterPostInitializationOutput(static postInitializationContext =>
         {
             postInitializationContext.AddEmbeddedAttributeDefinition();
-            postInitializationContext.AddOption();
         });
     }
 }

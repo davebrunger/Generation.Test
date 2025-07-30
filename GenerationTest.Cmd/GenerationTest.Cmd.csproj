@@ -9,9 +9,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="../WS.DomainModelling/WS.DomainModelling.csproj"
-						  OutputItemType="Analyzer"
-						  ReferenceOutputAssembly="false" />
+	  <PackageReference Include="WS.DomainModelling.Common" Version="1.0.6" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../WS.DomainModelling/WS.DomainModelling.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 </Project>

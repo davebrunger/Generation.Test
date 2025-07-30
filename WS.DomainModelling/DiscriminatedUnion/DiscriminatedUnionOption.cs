@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace WS.DomainModelling.DiscriminatedUnion;
+﻿namespace WS.DomainModelling.DiscriminatedUnion;
 
 public class DiscriminatedUnionOption
 {

@@ -1,8 +1,4 @@
-﻿using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
-
-namespace WS.DomainModelling.DiscriminatedUnion;
+﻿namespace WS.DomainModelling.DiscriminatedUnion;
 
 public static class OptionAttribute
 {
