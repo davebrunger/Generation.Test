@@ -1,5 +1,66 @@
 ﻿namespace WS.DomainModelling.Common;
 
+public abstract class Option<T>
+{
+    public bool IsSome => Match(_ => true, () => false);
+    public bool IsNone => Match(_ => false, () => true);
+
+    private Option()
+    {
+    }
+
+    public abstract TResult Match<TResult>(Func<T, TResult> someFunc, Func<TResult> noneFunc);
+
+    public abstract void Switch<TResult>(Action<T> someAction, Action noneAction);
+
+    private sealed class SomeOption : Option<T>
+    {
+        private readonly T value;
+
+        internal SomeOption(T value)
+        {
+            this.value = value;
+        }
+
+        public override TResult Match<TResult>(Func<T, TResult> someFunc, Func<TResult> noneFunc)
+        {
+            return someFunc(value);
+        }
+
+        public override void Switch<TResult>(Action<T> someAction, Action noneAction)
+        {
+            someAction(value);
+        }
+    }
+
+    private sealed class NoneOption : Option<T>
+    {
+        internal NoneOption()
+        {
+        }
+
+        public override TResult Match<TResult>(Func<T, TResult> someFunc, Func<TResult> noneFunc)
+        {
+            return noneFunc();
+        }
+        public override void Switch<TResult>(Action<T> someAction, Action noneAction)
+        {
+            noneAction();
+        }
+    }
+
+    public static implicit operator Option<T>(Option.NoneOption _) => None;
+
+    public static Option<T> Some(T some) => new SomeOption(some);
+
+    public static Option<T> None { get; } = new NoneOption();
+
+    public override string ToString()
+    {
+        return Match(s => $"Some ({s})", () => "None");
+    }
+}
+
 public static class Option
 {
     public sealed class NoneOption
@@ -41,59 +102,3 @@ public static class Option
     }
 }
 
-public class Option<T>
-{
-    private enum OptionOption
-    {
-        Some,
-        None
-    }
-
-    private readonly OptionOption option;
-
-    private T Value { get; init; }
-
-    public bool IsSome => option == OptionOption.Some;
-    public bool IsNone => option == OptionOption.None;
-
-    private Option(OptionOption option)
-    {
-        this.option = option;
-        Value = default!;
-    }
-
-    public TResult Match<TResult>(Func<T, TResult> someFunc, Func<TResult> noneFunc)
-    {
-        return option switch
-        {
-            OptionOption.Some => someFunc(Value),
-            OptionOption.None => noneFunc(),
-            _ => throw new IndexOutOfRangeException($"{nameof(option)} is out of range")
-        };
-    }
-
-    public void Switch<TResult>(Action<T> someAction, Action noneAction)
-    {
-        switch (option)
-        {
-            case OptionOption.Some:
-                someAction(Value);
-                return;
-            case OptionOption.None:
-                noneAction();
-                return;
-            default:
-                throw new IndexOutOfRangeException($"{nameof(option)} is out of range");
-        }
-    }
-
-    public static implicit operator Option<T>(Option.NoneOption _) => None;
-
-    public static Option<T> Some(T some) => new(OptionOption.Some) { Value = some };
-    public static Option<T> None { get; } = new(OptionOption.None);
-
-    public override string ToString()
-    {
-        return Match(s => $"Some ({s})", () => "None");
-    }
-}

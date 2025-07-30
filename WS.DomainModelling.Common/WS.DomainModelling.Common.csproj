@@ -1,15 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	  <TargetFramework>netstandard2.0</TargetFramework>
-	  <LangVersion>latest</LangVersion>
-	  <Nullable>enable</Nullable>
-	  <VersionPrefix>1.0.5</VersionPrefix>
-	  <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<VersionPrefix>1.0.5</VersionPrefix>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<VersionPrefix>1.0.6</VersionPrefix>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>Readme.md</PackageReadmeFile>
+		<Title>WS Domain Modelling Common</Title>
+		<Authors>David Brunger</Authors>
+		<Copyright>© 2025 David Brunger</Copyright>
+		<PackageProjectUrl>https://github.com/davebrunger/Generation.Test</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/davebrunger/Generation.Test.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>Code Generation;Domain Modelling</PackageTags>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="9.0.7" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="../Readme.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="System.Collections.Immutable" Version="9.0.7" />
+	</ItemGroup>
 
 </Project>
