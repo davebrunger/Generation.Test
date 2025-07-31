@@ -134,13 +134,13 @@ public class BasicWrapperGenerator : IIncrementalGenerator
                     return $"{{model.FileName}} ({Value})";
                 }
 
-                public bool Equals({{model.ClassName}}? other)
+                public bool Equals({{model.ClassName}} other)
                 {
                     if (other is null) return false;
                     return Value.Equals(other.Value);
                 }
 
-                public override bool Equals(object? obj)
+                public override bool Equals(object obj)
                 {
                     return obj is {{model.ClassName}} other && Equals(other);
                 }

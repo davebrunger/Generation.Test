@@ -8,7 +8,7 @@
 		<AssemblyName></AssemblyName>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-		<VersionPrefix>1.0.6</VersionPrefix>
+		<VersionPrefix>1.0.7</VersionPrefix>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<Title>WS Domain Modelling</Title>
@@ -24,12 +24,8 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Basic.Reference.Assemblies" Version="1.8.3" GeneratePathProperty="true" PrivateAssets="all" />
-		<PackageReference Include="System.Collections.Immutable" Version="9.0.7" GeneratePathProperty="true" PrivateAssets="all" />
-		<PackageReference Include="WS.DomainModelling.Common" Version="1.0.6" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="System.Collections.Immutable" Version="9.0.7" GeneratePathProperty="true" />
+		<PackageReference Include="WS.DomainModelling.Common" Version="1.0.6" GeneratePathProperty="true" />
 	</ItemGroup>
 
 	<PropertyGroup>
@@ -46,12 +42,10 @@
 
 	<Target Name="GetDependencyTargetPaths">
 		<ItemGroup>
-			<TargetPathWithTargetPlatformMoniker Include="$(PKGBasic_Reference_Assemblies)\lib\netstandard2.0\Basic.Reference.Assemblies.dll" IncludeRuntimeDependency="false" />
 			<TargetPathWithTargetPlatformMoniker Include="$(PKGSystem_Collections_Immutable)\lib\netstandard2.0\System.Collections.Immutable.dll" IncludeRuntimeDependency="false" />
 			<TargetPathWithTargetPlatformMoniker Include="$(PKGWS_DomainModelling_Common)\lib\netstandard2.0\WS.DomainModelling.Common.dll" IncludeRuntimeDependency="false" />
 			<!-- Pack both our DLL and the dependencies into a generated Nuget Package -->
 			<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-			<None Include="$(PKGBasic_Reference_Assemblies)\lib\netstandard2.0\Basic.Reference.Assemblies.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 			<None Include="$(PKGSystem_Collections_Immutable)\lib\netstandard2.0\System.Collections.Immutable.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 			<None Include="$(PKGWS_DomainModelling_Common)\lib\netstandard2.0\WS.DomainModelling.Common.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 		</ItemGroup>
