@@ -12,6 +12,36 @@ namespace GenerationTest.Cmd;
 public partial class Tester<Q>
 {
     Option<Score> score { get; } = NaturalInteger.Create(5).Bind(home => NaturalInteger.Create(2).Map(away => new Score(home, away)));
+
+    public static DetailedResult<List<string>> DoSomething()
+    {
+        var index = 9;
+        if (DateTime.Now > DateTime.Now)
+        {
+            return DetailedResult<List<string>>.IndexOutOfBoundsError((index, "Message"));
+        }
+        if (DateTime.Now > DateTime.Now)
+        {
+            return DetailedResult<List<string>>.FileNotFoundError("Message");
+        }
+        List<string> messages = ["Hello"];
+        if (messages.Count > 0)
+        {
+            return DetailedResult<List<string>>.Failed;
+        }
+        return DetailedResult<List<string>>.Success(messages);
+    }
+
+    public static void DoSomethingElse()
+    {
+        var result = DoSomething();
+        result.Switch(
+            messages => Console.WriteLine(string.Join(", ", messages)),
+            () => Console.WriteLine("Failed"),
+            message => Console.WriteLine($"File not found {message}"),
+            result => Console.WriteLine($"Index {result.AnInt} out of range: {result.Item2}")
+        );
+    }
 }
 
 [BasicWrapper(typeof(string), nameof(Validate))]
@@ -35,25 +65,6 @@ public record Score(NaturalInteger Home, NaturalInteger Away);
 [Option("Failed")]
 [Option("FileNotFoundError", OfType = typeof(string))]
 [Option("IndexOutOfBoundsError", OfType = typeof((int AnInt, string)))]
-public partial class DetailedResult<Q>
+public partial class DetailedResult<Q> 
 {
-}
-
-DetailedResult<List<string>> DoSomething()
-{
-    var index = 9;
-    if (DateTime.Now > DateTime.Now)
-    {
-        return DetailedResult<List<string>>.IndexOutOfBoundsError((index, "Message"));
-    }
-    if (DateTime.Now > DateTime.Now)
-    {
-        return DetailedResult<List<string>>.FileNotFoundError("Message");
-    }
-    var messages = new[] { "Hello" }.ToList();
-    if (messages.Count > 0)
-    {
-        return DetailedResult<List<string>>.Failed;
-    }
-    return DetailedResult<List<string>>.Success(messages);
 }
