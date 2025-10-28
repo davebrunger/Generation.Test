@@ -221,6 +221,13 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
 
     private static string GetFullType(INamedTypeSymbol type)
     {
+        if (type.IsTupleType)
+        {
+            var elements = type.TupleElements
+                .Select(e => $"{GetFullType((e.Type as INamedTypeSymbol)!)} {e.Name}");
+            return $"({string.Join(", ", elements)})";
+        }
+
         return $"{type!.ContainingNamespace}.{type!.Name}";
     }
 }

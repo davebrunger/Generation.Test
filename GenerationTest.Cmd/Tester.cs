@@ -7,6 +7,7 @@ namespace GenerationTest.Cmd;
 [Option("blobblobblob", OfType = typeof(string))]
 [Option("Smith")]
 [Option("Wobbly", OfGeneric = "Q")]
+[Option("JammyWhammy", OfType = typeof((int AnInt, string)))]
 public partial class Tester<Q>
 {
 }
