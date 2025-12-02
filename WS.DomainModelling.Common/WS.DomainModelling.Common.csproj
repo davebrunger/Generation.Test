@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<VersionPrefix>1.0.6</VersionPrefix>
+		<VersionPrefix>1.0.7</VersionPrefix>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<Title>WS Domain Modelling Common</Title>
@@ -24,7 +24,7 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="System.Collections.Immutable" Version="9.0.7" />
+		<PackageReference Include="System.Collections.Immutable" Version="10.0.0" />
 	</ItemGroup>
 
 </Project>
