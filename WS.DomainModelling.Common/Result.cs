@@ -182,22 +182,20 @@ public static class Result
         return DoubleMap(success, error)(input);
     }
 
-    public static Result<W, TError> Plus<T, U, V, W, TError>(
-        this T input,
-        Func<U, V, W> combineSuccess,
+    public static Result<V, TError> Plus<T, U, V, TError>(
+        Result<T, TError> result1,
+        Func<T, U, V> combineSuccess,
         Func<TError, TError, TError> combineError,
-        Func<T, Result<U, TError>> function1,
-        Func<T, Result<V, TError>> function2)
+        Result<U, TError> result2)
     {
-        return Plus(combineSuccess, combineError, function1, function2)(input);
+        return Plus(combineSuccess, combineError, (object _) => result1, _ => result2)(null!);
     }
 
-    public static Result<(W Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> Plus<T, U, V, W, TMessage, TError>(
-        this T input,
-        Func<U, V, W> combineSuccess,
-        Func<T, Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>>> function1,
-        Func<T, Result<(V Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>>> function2)
+    public static Result<(V Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> Plus<T, U, V, TMessage, TError>(
+        this Result<(T Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> result1,
+        Func<T, U, V> combineSuccess,
+        Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> result2)
     {
-        return Plus(combineSuccess, function1, function2)(input);
+        return Plus(combineSuccess, (object _) => result1, _ => result2)(null!);
     }
 }
