@@ -101,6 +101,12 @@ public static class Result
         return Bind(function.Compose(Result<U, TError>.Success));
     }
 
+    public static Func<Result<(T Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>>, Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>>> Map<T, U, TMessage, TError>(
+        Func<T, U> function)
+    {
+        return Bind<T, U, TMessage, TError>(input => Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>>.Success((function(input), [])));
+    }
+
     public static Func<T, Result<U, TError>> TryCatch<T, U, TError>(Func<T, U> function, Func<Exception, TError> error)
     {
         return input =>
@@ -162,7 +168,8 @@ public static class Result
         return Bind(function)(input);
     }
     public static Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> Bind<T, U, TMessage, TError>(
-        this Result<(T Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> input, Func<T, Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>>> function)
+        this Result<(T Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> input, 
+        Func<T, Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>>> function)
     {
         return Bind(function)(input);
     }
@@ -170,6 +177,13 @@ public static class Result
     public static Result<U, TError> Map<T, U, TError>(this Result<T, TError> input, Func<T, U> function)
     {
         return Map<T, U, TError>(function)(input);
+    }
+
+    public static Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> Map<T, U, TMessage, TError>(
+        this Result<(T Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> input, 
+        Func<T, U> function)
+    {
+        return Map<T, U, TMessage, TError>(function)(input);
     }
 
     public static Result<U, TError> TryCatch<T, U, TError>(this T input, Func<T, U> function, Func<Exception, TError> convert)
