@@ -33,7 +33,7 @@ public class BasicWrapperGenerator : IIncrementalGenerator
                     .SingleOrDefault();
                 var location = attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()!;
 
-                var errors = new System.Collections.Generic.List<(BasicWrapperError Error, string Message, Location Location)>();
+                var errors = new List<(BasicWrapperError Error, string Message, Location Location)>();
                 if (validateMethod == null)
                 {
                     errors.Add((

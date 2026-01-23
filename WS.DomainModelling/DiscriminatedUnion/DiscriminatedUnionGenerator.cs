@@ -34,7 +34,7 @@ public class DiscriminatedUnionGenerator : IIncrementalGenerator
             {
                 var _class = context.TargetSymbol as INamedTypeSymbol;
 
-                var genericParameters = _class!.TypeParameters.Select(p => p.Name).ToImmutableHashSet();
+                var genericParameters = new HashSet<string>(_class!.TypeParameters.Select(p => p.Name));
 
                 var properties = _class.GetAttributes()
                     .Where(a => a.AttributeClass!.Name == "OptionAttribute") // Make this better by checking the namespace too
