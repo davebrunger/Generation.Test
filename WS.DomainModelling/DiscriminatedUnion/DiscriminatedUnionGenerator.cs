@@ -8,18 +8,37 @@ using GetOptionResult = Common.Result<
         Location Location
     )>>;
 
+/// <summary>
+/// An incremental source generator that generates discriminated union types for domain modelling.
+/// </summary>
 [Generator]
 public class DiscriminatedUnionGenerator : IIncrementalGenerator
 {
     private static readonly Regex OptionNamePattern = new("^[_a-zA-Z][_a-zA-Z0-9]*$");
     
+    /// <summary>
+    /// Errors that can occur when getting an option from an attribute.
+    /// </summary>
     public enum GetOptionError
     {
+        /// <summary>
+        /// The option name is invalid.
+        /// </summary>
         InvalidName = 1,
+        /// <summary>
+        /// Both OfType and OfGeneric properties are set.
+        /// </summary>
         BothTypeAndGenericSet,
+        /// <summary>
+        /// The specified generic type is not valid.
+        /// </summary>
         InvalidGenericType
     }
 
+    /// <summary>
+    /// Initializes the source generator.
+    /// </summary>
+    /// <param name="context">The context for the incremental generator initialization.</param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(static postInitializationContext =>

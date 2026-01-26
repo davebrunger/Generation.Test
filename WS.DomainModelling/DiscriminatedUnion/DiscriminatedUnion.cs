@@ -1,6 +1,6 @@
 ﻿namespace WS.DomainModelling.DiscriminatedUnion;
 
-public class DiscriminatedUnion
+internal class DiscriminatedUnion
 {
     private enum Option
     {

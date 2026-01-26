@@ -1,5 +1,8 @@
 ﻿namespace WS.DomainModelling.BasicWrapper;
 
+/// <summary>
+/// An incremental source generator that generates basic wrapper types for domain modelling.
+/// </summary>
 [Generator]
 public class BasicWrapperGenerator : IIncrementalGenerator
 {
@@ -12,6 +15,10 @@ public class BasicWrapperGenerator : IIncrementalGenerator
         ValidateMethodParameterTypeMismatch
     }
 
+    /// <summary>
+    /// Initializes the source generator.
+    /// </summary>
+    /// <param name="context">The context for the incremental generator initialization.</param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(static postInitializationContext =>
