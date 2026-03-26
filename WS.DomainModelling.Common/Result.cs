@@ -3,7 +3,7 @@
 public abstract class Result<T, TError>
 {
     public bool IsSuccess => Match(_ => true, _ => false);
-    public bool IsError => Match(_ => false, _ => false);
+    public bool IsError => Match(_ => false, _ => true);
 
     private Result() { }
 
@@ -211,5 +211,71 @@ public static class Result
         Result<(U Value, IReadOnlyList<TMessage> Messages), IReadOnlyList<TError>> result2)
     {
         return Plus(combineSuccess, (object _) => result1, _ => result2)(null!);
+    }
+
+    // Async methods returning TaskResult
+
+    public static TaskResult<U, TError> Bind<T, U, TError>(this Result<T, TError> input, Func<T, Task<Result<U, TError>>> function)
+    {
+        return new TaskResult<U, TError>(input.Match(function, e => Task.FromResult(Result<U, TError>.Error(e))));
+    }
+
+    public static TaskResult<U, TError> Map<T, U, TError>(this Result<T, TError> input, Func<T, Task<U>> function)
+    {
+        return input.Bind(async t => Result<U, TError>.Success(await function(t).ConfigureAwait(false)));
+    }
+
+    public static TaskResult<U, TError> Bind<T, U, TError>(this Task<Result<T, TError>> input, Func<T, Result<U, TError>> function)
+    {
+        return ((TaskResult<T, TError>)input).Bind(function);
+    }
+
+    public static TaskResult<U, TError> Bind<T, U, TError>(this Task<Result<T, TError>> input, Func<T, Task<Result<U, TError>>> function)
+    {
+        return ((TaskResult<T, TError>)input).Bind(function);
+    }
+
+    public static TaskResult<U, TError> Map<T, U, TError>(this Task<Result<T, TError>> input, Func<T, U> function)
+    {
+        return ((TaskResult<T, TError>)input).Map(function);
+    }
+
+    public static TaskResult<U, TError> Map<T, U, TError>(this Task<Result<T, TError>> input, Func<T, Task<U>> function)
+    {
+        return ((TaskResult<T, TError>)input).Map(function);
+    }
+
+    public static TaskResult<U, TError> Bind<T, U, TError>(this TaskResult<T, TError> input, Func<T, Task<Result<U, TError>>> function)
+    {
+        return input.Bind(function);
+    }
+
+    public static TaskResult<U, TError> Map<T, U, TError>(this TaskResult<T, TError> input, Func<T, Task<U>> function)
+    {
+        return input.Map(function);
+    }
+
+    public static Func<T, TaskResult<U, TError>> TryCatchAsync<T, U, TError>(Func<T, Task<U>> function, Func<Exception, TError> error)
+    {
+        return input =>
+        {
+            async Task<Result<U, TError>> Execute()
+            {
+                try
+                {
+                    return Result<U, TError>.Success(await function(input).ConfigureAwait(false));
+                }
+                catch (Exception ex)
+                {
+                    return Result<U, TError>.Error(error(ex));
+                }
+            }
+            return new TaskResult<U, TError>(Execute());
+        };
+    }
+
+    public static TaskResult<U, TError> TryCatchAsync<T, U, TError>(this T input, Func<T, Task<U>> function, Func<Exception, TError> convert)
+    {
+        return TryCatchAsync(function, convert)(input);
     }
 }
