@@ -1,0 +1,36 @@
+name: Publish WS.DomainModelling to NuGet
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (e.g. 1.0.14)'
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore WS.DomainModelling/WS.DomainModelling.csproj
+
+      - name: Build
+        run: dotnet build WS.DomainModelling/WS.DomainModelling.csproj --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test WS.DomainModelling.Test/WS.DomainModelling.Test.csproj --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack WS.DomainModelling/WS.DomainModelling.csproj --configuration Release --no-build -p:VersionPrefix=${{ inputs.version }} --output ./nupkgs
+
+      - name: Publish to NuGet
+        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
