@@ -24,14 +24,17 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
       - name: Run tests
-        run: dotnet test WS.DomainModelling.Test/WS.DomainModelling.Test.csproj --configuration Release --no-restore
+        run: dotnet test --configuration Release --no-build
 
       - name: Pack WS.DomainModelling.Common
-        run: dotnet pack WS.DomainModelling.Common/WS.DomainModelling.Common.csproj --configuration Release --no-restore -p:VersionPrefix=${{ steps.version.outputs.VERSION }} --output ./nupkgs
+        run: dotnet pack WS.DomainModelling.Common/WS.DomainModelling.Common.csproj --configuration Release --no-build -p:VersionPrefix=${{ steps.version.outputs.VERSION }} --output ./nupkgs
 
       - name: Pack WS.DomainModelling
-        run: dotnet pack WS.DomainModelling/WS.DomainModelling.csproj --configuration Release --no-restore -p:VersionPrefix=${{ steps.version.outputs.VERSION }} --output ./nupkgs
+        run: dotnet pack WS.DomainModelling/WS.DomainModelling.csproj --configuration Release --no-build -p:VersionPrefix=${{ steps.version.outputs.VERSION }} --output ./nupkgs
 
       - name: Publish to NuGet
         run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
